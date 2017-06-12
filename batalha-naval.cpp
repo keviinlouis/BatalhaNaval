@@ -13,12 +13,16 @@ using namespace std;
 
 //Tamanho do mapa
 #define tamanho 11
+//Quantidade de Barcos 
+#define qntd_barcos 4
 
 ///////Variaveis
 
 //Struct Do Conteudo do Mapa
 struct str_celula{
+	//Parte que o usuario irá ver
 	string user;
+	//Parte para comparação de acertos
 	string barco;
 };
 //Mapa
@@ -30,7 +34,7 @@ string mapa_user[tamanho][tamanho];
 
 //Arrays
 string letras[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-string numero[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+string numeros[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
 
 //String para aparecer quando acertar
@@ -39,7 +43,6 @@ string erro = "-";
 
 //Quantidades de acertos, MAX 10
 int acertos = 0;
-
 
 //Prototipacao
 void implementa_barcos();
@@ -63,8 +66,10 @@ main(){
 		int hori_user = 0;
 		int ver_user = 0;
 		string str_hori_user;
+		string str_ver_user;
+		
 		// Limpar a Tela
-		system("cls");
+		//system("cls");
 		
 		//Mostrar Mapa
 		if(mostrar_barcos == "y"){
@@ -78,7 +83,7 @@ main(){
 		cin >> str_hori_user;
 
 		cout << "Digite o numero: \n";
-		cin >> ver_user;
+		cin >> str_ver_user;
 
 
 		//Tranforma minuscula em maiuscula
@@ -89,13 +94,17 @@ main(){
 			if(letras[x] == str_hori_user){
 				hori_user = x+1;
 			}
-		}	
+		}
+		//Pega a Posição do Numero	
+		for(int x = 0; x < tamanho-1; x++){
+			if(numeros[x] == str_ver_user){
+				ver_user = x+1;
+			}
+		}
 
-		//Tranforma valor para key
-		ver_user++;
-		
+			
 		//Verifica se acertou
-		if(hori_user == 0 || ver_user >= 10 || ver_user < 0){
+		if(hori_user == 0 || ver_user >= 10 || ver_user <= 0){
 			cout << "Selecione um valor valido \n";
 			system("pause");
 			
@@ -140,8 +149,8 @@ void implementa_mapa(){
 
 				}else if(x == 0){
 					str_celula celula;
-					celula.user = numero[v];
-					celula.barco = numero[v];
+					celula.user = numeros[v];
+					celula.barco = numeros[v];
 					mapa[y][x] = celula;		
 					v++;
 					
@@ -158,66 +167,70 @@ void implementa_mapa(){
 }
 
 void implementa_barcos(){
-	
+	//Randomico pelo horario atual
 	srand(time(0));
-	int verifica = 0;
-	int y, x;
 	
-	for(int tipo_barco = 1; tipo_barco <= 4; tipo_barco++){
+	//Variaveis
+	int verifica = 0;
+	int y, x, direcao;
+	
+	//Tipo de barco definido pelo limite de barcos
+	for(int tipo_barco = 1; tipo_barco <= qntd_barcos; tipo_barco++){
+
+		int tentativas = 0;
+		y = rand() % 9+1;
+		x = rand() % 9+1;
 		while(verifica == 0){
-		
-			y = rand() % 9+1;
-			x = rand() % 9+1;
-		
-			//direita
+			if(tentativas >= 4){
+				y = rand() % 9+1;
+				x = rand() % 9+1;
+				tentativas = 0;
+			}
+			//Direção Randomica: 1 -> direita, 2-> Esquerda, 3-> Cima, 4-> Baixo
+			direcao = rand() % 4+1;
+
+			//Verifica se o mapa está livre para implementar o barco
 			for(int i = 0; i<tipo_barco; i++){
-				if(mapa[y][x+i].barco == acerto || x+i >= 10){
-					verifica = 0;
+				switch(direcao){
+					case 1:
+						//Se nessa Celula já tiver um barco, ou se a celular está fora do mapa, retorna 0 e sai do looping
+						if(mapa[y][x+i].barco == acerto || x+i >= 10){
+							verifica = 0;
+							break;
+						}else{
+							verifica = 1;
+						}
 					break;
-				}else{
-					verifica = 1;
+					case 2:
+						if(mapa[y][x-i].barco == acerto || x-i <= 0){
+							verifica = 0;
+							break;
+						}else{
+							verifica = 2;
+						}
+					break;
+					case 3:
+						if(mapa[y+i][x].barco == acerto || y+i >= 10){
+							verifica = 0;
+							break;
+						}else{
+							verifica = 3;
+						}
+					break;
+					case 4:
+						if(mapa[y-i][x].barco == acerto || y-i <= 0){
+							verifica = 0;
+							break;
+						}else{
+							verifica = 4;
+						}
+					break;
 				}
-			}
-			
-			//esquerda
-			if(verifica == 0){
-				for(int i = 0; i<tipo_barco; i++){
-					if(mapa[y][x-i].barco == acerto || x-i <= 0){
-						verifica = 0;
-						break;
-					}else{
-						verifica = 2;
-					}
-				}
-			}
-			
-			//cima
-			if(verifica == 0){
-				for(int i = 0; i<tipo_barco; i++){
-					if(mapa[y+i][x].barco == acerto || y+i >= 10){
-						verifica = 0;
-						break;
-					}else{
-						verifica = 3;
-					}
-				}
-			}
-			
-			//baixo
-			if(verifica == 0){
-				for(int i = 0; i<tipo_barco; i++){
-					if(mapa[y-i][x].barco == acerto || y-i <= 0){
-						verifica = 0;
-						break;
-					}else{
-						verifica = 4;
-					}
-				}
+				tentativas++;
 			}
 		}
 		
 		int i = 0;
-	
 		switch(verifica){
 			//Se caso for pra direita
 			case 1:
@@ -250,6 +263,7 @@ void implementa_barcos(){
 				}
 				break;
 		}
+		
 		verifica = 0;
 	}
 }
